@@ -1,0 +1,24 @@
+<!--
+	@author: Justin Lee
+	@date: 4/23/2016
+	@file: index.html
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blackjack Game</title>
+  <script src="blackjack.js"> </script>
+</head>
+<body bgcolor="gray" text="black"> <!-- get this in a Css file  -->
+
+
+
+  <br>
+  <input type='button' style="width: 200px;" value='NewGame' id="game" />
+  <br>
+  <input type='button' style="width: 200px;" value="Hit" id='hit' onclick="Player.setHit()">
+  <br>
+  <input type='button' style="width: 200px;" value="Stay" id='stay' onclick="Player.setStands()">
+
+</body>
+</html>

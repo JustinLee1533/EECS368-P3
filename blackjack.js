@@ -7,7 +7,7 @@
 //Possible classes: Cards, Deck, hand, player, dealer, game
 var gameDeck = new Deck();	//Deck object
 var gameDealer = new Dealer();  //Dealer object
-var gamePlayer = new Player();
+var gamePlayer = new Player(); //player object
 
 
 /*
@@ -32,6 +32,26 @@ function Player()
   this.hand = [];
   this.hits =false;
   this.stands = false;
+
+  /*
+    @Pre: called from an HTML button press
+    @Post:sets the players hit value to true whenever its called
+    @Return: None
+  */
+  this.setHit = function()
+  {
+    this.hits = true;
+  }
+
+  /*
+    @Pre: called from an html button
+    @Post: set the stands variable to true
+    @Return: None
+  */
+  this.setStands = function()
+  {
+    this.stands = true;
+  }
 }
 
 /*
@@ -41,6 +61,7 @@ function Player()
 */
 function game() //maybe needs to take parameters of a deck, player, and dealer?, return true if player wins, false if dealer wins?
 {
+  alert("New Game buster douglas");
   //initialize Deck
   gameDeck.initialize();
 
@@ -74,9 +95,12 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
   //players turn
   do
   {
-    //
+    alert("Hit or Stay");
+    this.wait();  //wait until one of the buttons is pressed
+
     if(gamePlayer.hits == true)
     {
+      this.gamePlayer.hits = false;
       gamePlayer.hand.push(gameDeck.pop());
 
       if((this.handVal(gamePlayer.hand))>21)  //player has busted
@@ -84,7 +108,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
         return(false);
       }
     }
-  }while(((this.handVal(gamePlayer.hand))<22)&& (gamePlayer.hits == true)) //TODO: make a hits function
+  }while(((this.handVal(gamePlayer.hand))<22)&& (gamePlayer.stands == false)) //TODO: make a hits function
 
 
   //if stand, allow the computer to go
@@ -112,7 +136,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       return(false);  //dealer wins
     }else if(((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand))))
     {
-      //tie
+      alert("The game is a tie");
     }
 
   /*
@@ -130,6 +154,20 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     }
 
     return(sum);
+  }
+
+  /*
+    @Pre: None
+    @Post: the game pauses until the player either hits or stays
+    @Return: None
+  */
+  this.wait = function()
+  {
+    if (!gamePlayer.hits && !gamePlayer.stands)
+    {
+      //TODO: get the state of the hit and stand button, write functions, maybe
+      setTimeout(wait,3000);
+    }
   }
 }
 
