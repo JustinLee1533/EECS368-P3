@@ -56,7 +56,8 @@ function Player()
   */
   this.setHit = function()
   {
-    alert("hitting");
+    gameGame.stop();
+
     this.hits = true;
   }
 
@@ -123,15 +124,15 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     }
 
 
-    //players turn
+    //players turn TODO: design flaw here.  We need to break this up into another function called by a button press
     do
     {
-      alert("Hit or Stay");
       this.wait();  //wait until one of the buttons is pressed
 
       if(gamePlayer.hits == true)
       {
         this.gamePlayer.hits = false;
+        console.log("adding card to player's hand");
         gamePlayer.hand.push(gameDeck.cardArr.pop());
 
         if((this.handVal(gamePlayer.hand))>21)  //player has busted
@@ -139,6 +140,8 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
           return(false);
         }
       }
+
+      this.printHands();
     }while(((this.handVal(gamePlayer.hand))<22)&& (gamePlayer.stands == false)) //TODO: make a hits function
 
 
@@ -195,13 +198,24 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     @Post: the game pauses until the player either hits or stays
     @Return: None
   */
+  var flag = true;
   this.wait = function()
   {
+    console.log("hits: "+ gamePlayer.hits);
     if (!gamePlayer.hits && !gamePlayer.stands)
     {
       //TODO: get the state of the hit and stand button, write functions, maybe
-      setTimeout(this.wait,3000);
+      console.log("waiting");
+      if(flag)
+      {
+        setTimeout(this.wait(),100000);
+      }
     }
+  }
+
+  this.stop = function()
+  {
+    flag = false;
   }
 
   /*
@@ -222,6 +236,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     {
       var tempCard = gameDealer.hand[i];
       var rankNo = tempCard.rank;
+      var suitS = tempCard.suit;
       console.log("value of the card: "+rankNo);
 
       hiddenHand[i] = rankNo;
@@ -232,7 +247,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     document.getElementById("p1").innerHTML = hiddenHand;
 
 
-    console.log("Players Hand");
+  console.log("Players Hand");
   console.log("Players Hand length: "+gamePlayer.hand.length);
     //print the players hand, all cards
     var playerHand =[];
@@ -316,7 +331,7 @@ function Deck()
   */
   this.shuffle = function()
   {
-    console.log("Size of the deck: "+this.cardArr.length);
+    //console.log("Size of the deck: "+this.cardArr.length);
     if (this.loaded == true)
     {
       var index1;
@@ -327,8 +342,8 @@ function Deck()
         var index1 = Math.floor(Math.random()*51);
         var index2 = Math.floor(Math.random()*51); //get two random indexes
 
-        console.log("Swapping index: "+index1+" with index "+ index2 )
-        console.log( "This swaps the: "+this.cardArr[index1].suit +" of "+ this.cardArr[index1].rank +" with the "+this.cardArr[index2].suit + " of " +this.cardArr[index2].rank);
+      //  console.log("Swapping index: "+index1+" with index "+ index2 )
+        //console.log( "This swaps the: "+this.cardArr[index1].suit +" of "+ this.cardArr[index1].rank +" with the "+this.cardArr[index2].suit + " of " +this.cardArr[index2].rank);
         temp = this.cardArr[index1];
         this.cardArr[index1] = this.cardArr[index2];
         this.cardArr[index2] = temp;
