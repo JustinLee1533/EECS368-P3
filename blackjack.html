@@ -1,0 +1,51 @@
+<!--
+	@author: Justin Lee
+	@date: 4/23/2016
+	@file: blackjack.html
+-->
+<html>
+<head>
+  <title>Blackjack Game</title>
+  <script type="text/javascript" src="blackjack.js"> </script>
+</head>
+<body bgcolor="gray" text="black"> <!-- get this in a Css file  -->
+
+
+  <p>Dealer's Hand</p>
+  <p id="p1">
+    No cards
+    <br> <br> <br>
+  </p>
+
+  <p>Your Hand</p>
+
+  <p id ="p2">
+
+    No cards
+      <br> <br> <br>
+
+  </p>
+  <br> <br> <br>
+
+  <button onclick="playGame()">New Game</button>
+  <button onclick="hit()">Hit</button>
+  <button onclick="stand()">Stand</button>
+
+  <br> <br> <br>
+
+  This how many ducats you got:
+  <p id="p3">
+  </p>
+  Ener a bet: <input type="number" min="0" id="bet" value="0"><br>
+
+  <br> <br> <br>
+
+  <p>
+    How to play:<br>
+    Enter a new bet and press New Game.  If you press New Game in the middle of the game, you will forfeit your bet.<br>
+    As long as your hand does not exceed 21 you may press hit for a new card.  If you're happy with your hand, you can press Stand <br>
+    and the dealer will go.  The dealer must hit until 17 and doesn't have to hit on a soft 17.  You may bet more money than you currently have.<br>
+    However, you will go into the hole.  Excessive amount of time spent in the hole will result in a visit from the mafia.
+  </p>
+</body>
+</html>

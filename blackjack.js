@@ -3,18 +3,22 @@
 *	@date:	2017/04/16
 *	@name:	blackjack.js
 */
-
-//Possible classes: Cards, Deck, hand, player, dealer, game
+//TODO: ACe logic, betting logic
 var gameDeck = new Deck();	//Deck object
 var gameDealer = new Dealer();  //Dealer object
 var gamePlayer = new Player(); //player object
 var gameGame = new game();
 var playerLost = false;
 var gameOver = false;
-
+var ducats = 200;
+var bet = 0;
+var playNumber = 0;
 
 function playGame()
 {
+  bet = Number(document.getElementById("bet").value); //Locks in bet as soon as they hit new game
+  playNumber++;
+  console.log("Play Number: "+playNumber+" and gameOver status: "+gameOver);
   gameGame.play();
 }
 
@@ -84,12 +88,24 @@ function stand()
 */
 function game() //maybe needs to take parameters of a deck, player, and dealer?, return true if player wins, false if dealer wins?
 {
-//  document.getElementById("p1").innerHTML = "No cards ";
-//  document.getElementById("p2").innerHTML = "No cards ";
+
 
   this.play = function()
   {
+    document.getElementById("p3").innerHTML = ducats;
+
     console.log("playing game");
+
+    if((playNumber >1)&&(gameOver == false))
+    {
+      gameOver = true;
+      ducats = ducats - bet;
+      document.getElementById("p3").innerHTML = ducats;
+      alert("You forfeit the game and lose your bet");
+      return;
+
+    }
+
 
     //ensure the hands are cleared
     gameDealer.hand = [];
@@ -122,7 +138,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     console.log("Dealers's Second card:"+c4.rank);
     gameDealer.hand.push(c4);
 
-    this.printHands();
+    this.printHands(false);
 
     //check to see if either player has a blackjack
     if((this.handVal(gamePlayer.hand))==21 && (this.handVal(gamePlayer.hand) ==21)) //TODO: maybe code would be prettier with a busts function
@@ -132,9 +148,21 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     }else if ((this.handVal(gamePlayer.hand))==21)
     {
       //player wins natural blackjack
+      gameOver = true;
+      ducats = ducats + bet;
+      document.getElementById("p3").innerHTML = ducats;
+
+      alert("You win a natural blackjack");
+
       return(true);
     }else if (this.handVal(gamePlayer.hand) ==21)
     {
+      gameOver = true;
+      ducats = ducats - bet;
+      document.getElementById("p3").innerHTML = ducats;
+
+      alert("Dealer has natural blackjack");
+
       //dealer wins natural blackjack
       return(false);
     }
@@ -151,18 +179,22 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       {
         console.log("adding card to player's hand");
         gamePlayer.hand.push(gameDeck.cardArr.pop());
-        this.printHands();
+        this.printHands(false);
 
         if((this.handVal(gamePlayer.hand))>21)  //player has busted, gameover
         {
           playerLost = true;
           gameOver = true;
-          this.printHands();
+          this.printHands(true);
+          ducats = ducats - bet;
+          document.getElementById("p3").innerHTML = ducats;
+
           alert("You lose");
           return(false);
         }else if((this.handVal(gamePlayer.hand))==21)//call stand for the player
         {
           alert("You have 21");
+
           this.stand();
         }
       }
@@ -181,13 +213,16 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       while(this.handVal(gameDealer.hand)<17)//if dealers hand< 17 hit
       {
         gameDealer.hand.push(gameDeck.cardArr.pop());
-        this.printHands();
+        this.printHands(false);
 
         if((this.handVal(gameDealer.hand))>21)  //Dealer has busted, gameover
         {
           gameDealer.busts = true;
           gameOver = true;
-        alert("dealer busts, you win");
+          this.printHands(true);
+          ducats = ducats + bet;
+          document.getElementById("p3").innerHTML = ducats;
+          alert("dealer busts, you win");
           return(false);
         }
 
@@ -195,16 +230,23 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
         if((this.handVal(gamePlayer.hand))>(this.handVal(gameDealer.hand)))
         {
           gameOver = true;
+          this.printHands(true);
           alert("You Win");
+          ducats = ducats + bet;
+          document.getElementById("p3").innerHTML = ducats;
           return(true); //player wins
         }else if ((this.handVal(gamePlayer.hand))<(this.handVal(gameDealer.hand)))
         {
           gameOver = true;
+          this.printHands(true);
+          ducats = ducats - bet;
+          document.getElementById("p3").innerHTML = ducats;
           alert("You Lose");
           return(false);  //dealer wins
         }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand)))
         {
           gameOver = true;
+          this.printHands(true);
           alert("The game is a tie");
         }
       }
@@ -219,19 +261,58 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
   this.handVal = function(arr)
   {
     var sum = 0;
+    var otherSum = 0;
     console.log("this hand has "+arr.length+" cards");
+
+    //ace check
+    var aceFlag = false;
+    var aceIndex;
+    for(var i = 0;((i<arr.length)&&!(aceFlag)); i++)
+    {
+      if(arr[i].rank == 1)
+      {
+      //  var temporaryCard = arr[i];
+        aceFlag = true;
+      //  otherArr[i].rank = -1;
+        aceIndex = i;
+
+      }
+      //otherArr[i] = temporaryCard;
+    }
+
+
     for(var i=0; i< arr.length; i++)
     {
       var tempVal = arr[i].rank;
+      var othertempVal = tempVal;
+
       console.log("Value of card "+i+" is: "+arr[i].rank);
       if(tempVal>=10)
       {
         tempVal = 10;
       }
+
+      if(i == aceIndex)
+      {
+        othertempVal = 11;
+      }else if(othertempVal>=10)
+      {
+        othertempVal = 10;
+      }
+
+      otherSum += othertempVal;
       sum += tempVal;
+      console.log("sum: "+sum);
+      console.log("otherSum: "+otherSum);
     }
 
-    return(sum);
+    if((otherSum<=21) && (aceFlag == true))
+    {
+      return(otherSum);
+    }else
+    {
+      return(sum);
+    }
   }
 
   /*
@@ -239,23 +320,43 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     @Post: The two current hands are written to the HTML document
     @Return: None
   */
-  this.printHands = function()
+  this.printHands = function(flag)
   {
     console.log("printing hands");
-
+    var j = 1;
     var hiddenHand =[];
     hiddenHand[0] = "X";
     console.log("Dealers Hand");
     console.log("Dealers Hand length: "+gameDealer.hand.length);
 
-    for(var i=1; i<gameDealer.hand.length; i++)
+    if(flag == true)
     {
+      j = 0;
+    }
+
+    for(var i = j; i<gameDealer.hand.length; i++)
+    {
+      console.log(i);
       var tempCard = gameDealer.hand[i];
       var rankNo = tempCard.rank;
       var suitS = tempCard.suit;
+
+      if(rankNo == 11)
+      {
+        rankNo = "J";
+      }else if(rankNo == 12)
+      {
+        rankNo = "Q"
+      }else if(rankNo == 13)
+      {
+        rankNo = "K";
+      }else if((rankNo == 1)||(rankNo == -1))
+      {
+        rankNo = "A";
+      }
       console.log("value of the card: "+rankNo);
 
-      hiddenHand[i] = rankNo;
+      hiddenHand[i] = rankNo.toString()+suitS;;
     }
     hiddenHand = hiddenHand.toString();
 
@@ -273,9 +374,25 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     {
       var tempCard = gamePlayer.hand[i];
       var rankNo = tempCard.rank;
+      var suitS = tempCard.suit;
+
+      if(rankNo == 11)
+      {
+        rankNo = "J";
+      }else if(rankNo == 12)
+      {
+        rankNo = "Q"
+      }else if(rankNo == 13)
+      {
+        rankNo = "K";
+      }else if(rankNo == 1)
+      {
+        rankNo = "A";
+      }
+
       console.log("value of the card: "+rankNo);
 
-      playerHand[i] = rankNo;
+      playerHand[i] = rankNo.toString()+suitS;
     }
 
     var playerHandVal = "; Value of hand: "+this.handVal(gamePlayer.hand);
@@ -321,24 +438,23 @@ function Deck()
       {
         if(j == 0)
         {
-          newCard = new Card(i, "spades");
+          newCard = new Card(i, "&#9824");
           this.cardArr.push(newCard);
 
         }else if(j == 1)
         {
-          newCard = new Card(i, "hearts");
+          newCard = new Card(i, "&#9829");
           this.cardArr.push(newCard);
 
         }else if(j == 2)
         {
-          newCard = new Card(i, "diams");
+          newCard = new Card(i, "&#9830");
           this.cardArr.push(newCard);
 
         }else if(j == 3)
         {
-          newCard = new Card(i, "clubs");
+          newCard = new Card(i, "&#9827");
           this.cardArr.push(newCard);
-
         }
       }
     }
@@ -360,8 +476,8 @@ function Deck()
       var temp;
       for(var i = 0; i<100; i++) //perform 100 random shuffles
       {
-        var index1 = Math.floor(Math.random()*51);
-        var index2 = Math.floor(Math.random()*51); //get two random indexes
+        var index1 = Math.floor(Math.random()*52);
+        var index2 = Math.floor(Math.random()*52); //get two random indexes
 
       //  console.log("Swapping index: "+index1+" with index "+ index2 )
         //console.log( "This swaps the: "+this.cardArr[index1].suit +" of "+ this.cardArr[index1].rank +" with the "+this.cardArr[index2].suit + " of " +this.cardArr[index2].rank);
@@ -369,6 +485,11 @@ function Deck()
         this.cardArr[index1] = this.cardArr[index2];
         this.cardArr[index2] = temp;
       }
+    }
+
+    for(var i = 0; i<52; i++)
+    {
+      console.log(this.cardArr[i].rank + this.cardArr[i].suit);
     }
   }
 }
