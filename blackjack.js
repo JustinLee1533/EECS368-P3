@@ -9,6 +9,9 @@ var gameDeck = new Deck();	//Deck object
 var gameDealer = new Dealer();  //Dealer object
 var gamePlayer = new Player(); //player object
 var gameGame = new game();
+var playerLost = false;
+var gameOver = false;
+
 
 function playGame()
 {
@@ -36,6 +39,7 @@ function Dealer()
     this.hand = [];
     this.hits =false;
     this.stands = false;
+    this.busts = false;
 }
 
 /*
@@ -49,28 +53,29 @@ function Player()
   this.hits =false;
   this.stands = false;
 
-  /*
-    @Pre: called from an HTML button press
-    @Post:sets the players hit value to true whenever its called
-    @Return: None
-  */
-  this.setHit = function()
-  {
-    gameGame.stop();
 
-    this.hits = true;
-  }
-
-  /*
-    @Pre: called from an html button
-    @Post: set the stands variable to true
-    @Return: None
-  */
-  this.setStands = function()
-  {
-    this.stands = true;
-  }
 }
+
+/*
+  @Pre: called from an HTML button press
+  @Post: calls the hit function the game object
+  @Return: None
+*/
+function hit()
+{
+  gameGame.hit();
+}
+
+/*
+  @Pre: called from an html button
+  @Post: calls the stand function the game object
+  @Return: None
+*/
+function stand()
+{
+  gameGame.stand();
+}
+
 
 /*
 	@Pre: None
@@ -79,9 +84,20 @@ function Player()
 */
 function game() //maybe needs to take parameters of a deck, player, and dealer?, return true if player wins, false if dealer wins?
 {
+//  document.getElementById("p1").innerHTML = "No cards ";
+//  document.getElementById("p2").innerHTML = "No cards ";
+
   this.play = function()
   {
     console.log("playing game");
+
+    //ensure the hands are cleared
+    gameDealer.hand = [];
+    gamePlayer.hand = [];
+
+    gameOver = false;
+    playerLost = false;
+
     //initialize Deck
     gameDeck.initialize();
 
@@ -122,58 +138,78 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       //dealer wins natural blackjack
       return(false);
     }
+  }
 
-
-    //players turn TODO: design flaw here.  We need to break this up into another function called by a button press
-    do
-    {
-      this.wait();  //wait until one of the buttons is pressed
-
-      if(gamePlayer.hits == true)
+  /*
+    @Pre: called from hit(), the player has not lost the game
+    @Post: adds new card to the players hand
+    @Return: false if the player has busted
+  */
+  this.hit = function()
+  {
+      if((this.handVal(gamePlayer.hand)<21)&&(gameOver == false))
       {
-        this.gamePlayer.hits = false;
         console.log("adding card to player's hand");
         gamePlayer.hand.push(gameDeck.cardArr.pop());
+        this.printHands();
 
-        if((this.handVal(gamePlayer.hand))>21)  //player has busted
+        if((this.handVal(gamePlayer.hand))>21)  //player has busted, gameover
         {
+          playerLost = true;
+          gameOver = true;
+          this.printHands();
+          alert("You lose");
           return(false);
+        }else if((this.handVal(gamePlayer.hand))==21)//call stand for the player
+        {
+          alert("You have 21");
+          this.stand();
         }
       }
-
-      this.printHands();
-    }while(((this.handVal(gamePlayer.hand))<22)&& (gamePlayer.stands == false)) //TODO: make a hits function
-
-
-    //if stand, allow the computer to go
-
-    if(this.handVal(gameDealer.hand)<17)//if dealers hand< 17 hit
-    {
-      gameDealer.hand.push(gameDeck.cardArr.pop());
-
-      if((this.handVal(gameDealer.hand))>21)  //Dealer has busted
-      {
-        return(false);
-      }
-    }else
-    {
-        gameDealer.stands = true;
     }
 
-      //if stay, compare the two hands
+    /*
+    	@Pre: called from stand(), the player has not lost the game
+    	@Post: dealer hits until the value of its hand is at least 17, changes betting values
+    	@Return: The value of their hand
+    */
+  this.stand = function()
+  {
+    if((playerLost == false)&&(gameOver == false))
+    {
+      //call dealer function
+      while(this.handVal(gameDealer.hand)<17)//if dealers hand< 17 hit
+      {
+        gameDealer.hand.push(gameDeck.cardArr.pop());
+        this.printHands();
 
-      if((this.handVal(gamePlayer.hand))>(this.handVal(gameDealer.hand)))
-      {
-        return(true); //player wins
-      }else if ((this.handVal(gamePlayer.hand))<(this.handVal(gameDealer.hand)))
-      {
-        return(false);  //dealer wins
-      }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand)))
-      {
-        alert("The game is a tie");
+        if((this.handVal(gameDealer.hand))>21)  //Dealer has busted, gameover
+        {
+          gameDealer.busts = true;
+          gameOver = true;
+        alert("dealer busts, you win");
+          return(false);
+        }
+
       }
+        if((this.handVal(gamePlayer.hand))>(this.handVal(gameDealer.hand)))
+        {
+          gameOver = true;
+          alert("You Win");
+          return(true); //player wins
+        }else if ((this.handVal(gamePlayer.hand))<(this.handVal(gameDealer.hand)))
+        {
+          gameOver = true;
+          alert("You Lose");
+          return(false);  //dealer wins
+        }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand)))
+        {
+          gameOver = true;
+          alert("The game is a tie");
+        }
+      }
+    }
 
-  }
 
   /*
   	@Pre: the dealers or players hand array is passed in
@@ -186,36 +222,16 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     console.log("this hand has "+arr.length+" cards");
     for(var i=0; i< arr.length; i++)
     {
+      var tempVal = arr[i].rank;
       console.log("Value of card "+i+" is: "+arr[i].rank);
-      sum += arr[i].rank;
+      if(tempVal>=10)
+      {
+        tempVal = 10;
+      }
+      sum += tempVal;
     }
 
     return(sum);
-  }
-
-  /*
-    @Pre: None
-    @Post: the game pauses until the player either hits or stays
-    @Return: None
-  */
-  var flag = true;
-  this.wait = function()
-  {
-    console.log("hits: "+ gamePlayer.hits);
-    if (!gamePlayer.hits && !gamePlayer.stands)
-    {
-      //TODO: get the state of the hit and stand button, write functions, maybe
-      console.log("waiting");
-      if(flag)
-      {
-        setTimeout(this.wait(),100000);
-      }
-    }
-  }
-
-  this.stop = function()
-  {
-    flag = false;
   }
 
   /*
@@ -243,8 +259,10 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     }
     hiddenHand = hiddenHand.toString();
 
+    var dealerHandVal = "; Value of hand: "+this.handVal(gameDealer.hand);
+
     //print the dealers hand, all cards except the first
-    document.getElementById("p1").innerHTML = hiddenHand;
+    document.getElementById("p1").innerHTML = hiddenHand + dealerHandVal;
 
 
   console.log("Players Hand");
@@ -259,10 +277,13 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
 
       playerHand[i] = rankNo;
     }
-    document.getElementById("p2").innerHTML = playerHand.toString();
+
+    var playerHandVal = "; Value of hand: "+this.handVal(gamePlayer.hand);
+    document.getElementById("p2").innerHTML = playerHand.toString()+playerHandVal;
 
   }
 }
+
 
 /*
 	@Pre: None
