@@ -5,7 +5,60 @@
 // -----------------------------------------
 
 // --------------------
-//	variables
+//	run program
+// --------------------
+
+// call run every 10 ms
+setInterval (run, 10);
+
+// run game
+function run ()
+{
+	// game is initializing
+	if (gameInit)
+	{
+		drawGameInit ();
+	}
+	// game is over
+	else if (gameOver)
+	{
+		drawGameOver ();
+	}
+	// game is won
+	else if (gameWon)
+	{
+		drawGameWon ();
+	}
+	// game is running
+	else
+	{
+		// update positions
+		moveBall ();
+		movePaddle ();
+
+		// check for collisions
+		checkPaddleHit ();
+		checkBrickHit ();
+		checkBounce ();
+
+		// check if game is won
+		checkgameWon ();
+
+		// update speed of ball
+		speedUp ();
+
+		// clear board
+		board.clearRect (0, 0, boardW, boardH);
+
+		// draw updated board
+		drawBall ();
+		drawPaddle ();
+		drawBricks ();
+	}
+}
+
+// --------------------
+//	key variables
 // --------------------
 
 // board variables
@@ -13,6 +66,7 @@ var canvas = document.getElementById ("myCanvas");
 var board = canvas.getContext ("2d");
 var boardW = 600;
 var boardH = 705;
+// set canvas width and height
 board.canvas.width = boardW;
 board.canvas.height = boardH;
 
@@ -40,11 +94,13 @@ var brickO = 5;
 var brickW = (boardW - brickO * (brickC + 1)) / brickC;
 var brickH = 20;
 var bricks = [[]];
+// populate array
 for (var r = 0; r < brickR; r++)
 {
 	bricks[r] = [];
 	for (var c = 0; c < brickC; c++)
 	{
+		// random int from 1 - 5
 		bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
 	}
 }
@@ -117,64 +173,19 @@ function keyReleaseHandler (key)
 	// right arrow released
 	if (key.keyCode == 39)
 	{
+		// stop moving paddle right
 		right = false;
 	}
 	// left arrow released
 	else if (key.keyCode == 37)
 	{
+		// stop moving paddle left
 		left = false;
 	}
 }
 
 // --------------------
-//	run program
-// --------------------
-
-// call run every 10 ms
-setInterval (run, 10);
-
-// run game
-function run ()
-{
-	// game is initializing
-	if (gameInit)
-	{
-		drawGameInit ();
-	}
-	// game is over
-	else if (gameOver)
-	{
-		drawGameOver ();
-	}
-	// game is won
-	else if (gameWon)
-	{
-		drawGameWon ();
-	}
-	// game is running
-	else
-	{
-		// update positions
-		moveBall ();
-		movePaddle ();
-		checkPaddleHit ();
-		checkBrickHit ();
-		checkBounce ();
-		checkgameWon ();
-		speedUp ();
-
-		// clear board
-		board.clearRect (0, 0, boardW, boardH);
-
-		// draw updated board
-		drawBall ();
-		drawPaddle ();
-		drawBricks ();
-	}
-}
-
-// --------------------
-//	update display variables
+//	move & interact with objects
 // --------------------
 
 // move ball according to velocity
@@ -187,13 +198,14 @@ function moveBall ()
 // move paddle based on key press
 function movePaddle ()
 {
-	// move paddle
 	if (right && (paddleX < boardW - paddleW - paddleO))
 	{
+		// move right
 		paddleX += 4;
 	}
 	else if (left && paddleX > paddleO)
 	{
+		// move left
 		paddleX -= 4;
 	}
 }
@@ -206,6 +218,7 @@ function checkPaddleHit ()
 		// hit paddle
 		if (ballX > paddleX && ballX < paddleX + paddleW)
 		{
+			// bounce
 			ballDY = -ballDY;
 		}
 		// hit bottom
@@ -223,14 +236,19 @@ function checkBrickHit ()
 	{
 		for (var c = 0; c < brickC; c++)
 		{
+			// brick still exists
 			if (bricks[r][c] != 0)
 			{
 				var brickX = brickO + c * (brickW + brickO);
 				var brickY = brickO + r * (brickH + brickO);
+				// hit brick
 				if (((ballX > brickX) && (ballX < brickX + brickW)) && ((ballY > brickY) && (ballY < brickY + brickH)))
 				{
+					// bounce
 					ballDY = -ballDY;
+					// clear from array
 					bricks[r][c] = 0;
+					// update score
 					score ++;
 				}
 			}
@@ -241,15 +259,17 @@ function checkBrickHit ()
 // check if ball bounces off sides
 function checkBounce ()
 {
-	// bounce off sides
+	// hit sides
 	if ((ballX + ballDX) > (boardW - ballR - ballO) || (ballX + ballDX) < (ballR + ballO))
 	{
+		// bounce
 		ballDX = -ballDX;
 	}
 
-	// bounce off top
+	// hit top
 	if ((ballY + ballDY) < (ballR + ballO))
 	{
+		// bounce
 		ballDY = -ballDY;
 	}
 }
@@ -312,7 +332,7 @@ function speedUp ()
 }
 
 // --------------------
-//	draw display
+//	draw canvas objects
 // --------------------
 
 // draw ball
@@ -320,7 +340,7 @@ function drawBall ()
 {
 	board.beginPath ();
 	board.arc (ballX, ballY, ballR, 0, Math.PI * 2, false);
-	// dark gray
+	// fill dark gray
 	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
@@ -331,7 +351,7 @@ function drawPaddle ()
 {
 	board.beginPath ();
 	board.rect (paddleX, paddleY, paddleW, paddleH);
-	// dark gray
+	// fill dark gray
 	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
@@ -381,6 +401,10 @@ function drawBricks ()
 		}
 	}
 }
+
+// --------------------
+//	draw game screens
+// --------------------
 
 // draw game started screen
 function drawGameInit ()
