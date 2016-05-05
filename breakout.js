@@ -5,14 +5,101 @@
 // -----------------------------------------
 
 // --------------------
+//	important constants
+// --------------------
+
+// board
+var canvas = document.getElementById ("myCanvas");
+var board = canvas.getContext ("2d");
+var boardW = 600;
+var boardH = 705;
+// set canvas width and height
+board.canvas.width = boardW;
+board.canvas.height = boardH;
+
+// ball
+var ballO = 5;
+var ballR = 10;
+
+// paddle
+var paddleW = 80;
+var paddleH = 20;
+var paddleO = 5;
+var paddleY = boardH - paddleH - paddleO;
+
+// brick
+var brickR = 18;
+var brickC = 10;
+var brickO = 5;
+var brickW = (boardW - brickO * (brickC + 1)) / brickC;
+var brickH = 20;
+var bricks = [[]];
+
+
+// --------------------
+//	important variables
+// --------------------
+
+// ball
+var ballX;
+var ballY;
+var ballDX;
+var ballDY;
+
+// paddle
+var paddleX;
+var right;
+var left;
+
+// game
+var gameInit;
+var gameOver;
+var gameWon;
+var score;
+var pause;
+var startPause;
+var startPauseTimer;
+
+// run initialization
+initializeVars ();
+
+// initialize variables
+function initializeVars ()
+{
+	ballX = boardW / 2;
+	ballY = boardH * 3 / 4;
+	ballDX = 1.5;
+	ballDY = -1.5;
+	paddleX = boardW / 2 - paddleW / 2;
+	right = false;
+	left = false;
+	for (var r = 0; r < brickR; r++)
+	{
+		bricks[r] = [];
+		for (var c = 0; c < brickC; c++)
+		{
+			// random int from 1 - 5
+			bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
+		}
+	}
+	gameInit = true;
+	gameOver = false;
+	gameWon = false;
+	score = 0;
+	pause = false;
+	startPause = false;
+	startPauseTimer = 400;
+}
+
+// --------------------
 //	run program
 // --------------------
 
-// call run every 10 ms
-setInterval (run, 10);
+// call playBreakout every 10 ms
+setInterval (playBreakout, 10);
 
-// run game
-function run ()
+// play game
+function playBreakout ()
 {
 	// game is initializing
 	if (gameInit)
@@ -28,6 +115,39 @@ function run ()
 	else if (gameWon)
 	{
 		drawGameWon ();
+	}
+	// game is running
+	else
+	{
+		runGame ();
+	}
+}
+
+// run main part of game
+function runGame ()
+{
+	// initial pause
+	if (startPause)
+	{
+		startPauseTimer--;
+		if (startPauseTimer == 0)
+		{
+			startPause = false;
+		}
+
+		// clear board
+		board.clearRect (0, 0, boardW, boardH);
+
+		// draw updated board
+		drawBall ();
+		drawPaddle ();
+		drawBricks ();
+		drawCountdown ();
+	}
+	// game is paused
+	else if (pause)
+	{
+		drawPause ();
 	}
 	// game is running
 	else
@@ -58,86 +178,6 @@ function run ()
 }
 
 // --------------------
-//	important constants
-// --------------------
-
-// board
-var canvas = document.getElementById ("myCanvas");
-var board = canvas.getContext ("2d");
-var boardW = 600;
-var boardH = 705;
-// set canvas width and height
-board.canvas.width = boardW;
-board.canvas.height = boardH;
-
-// ball
-var ballO = 5;
-var ballR = 10;
-
-// paddle
-var paddleW = 80;
-var paddleH = 20;
-var paddleO = 5;
-var paddleY = boardH - paddleH - paddleO;
-
-// brick
-var brickR = 16;
-var brickC = 10;
-var brickO = 5;
-var brickW = (boardW - brickO * (brickC + 1)) / brickC;
-var brickH = 20;
-var bricks = [[]];
-
-
-// --------------------
-//	important variables
-// --------------------
-
-// ball
-var ballX;
-var ballY;
-var ballDX;
-var ballDY;
-
-// paddle
-var paddleX;
-var right;
-var left;
-
-// game
-var gameInit;
-var gameOver;
-var gameWon;
-var score;
-
-initializeVars ();
-
-// initialize variables
-function initializeVars ()
-{
-	ballX = boardW / 2;
-	ballY = boardH * 3 / 4;
-	ballDX = 1.5;
-	ballDY = 1.5;
-	paddleX = boardW / 2 - paddleW / 2;
-	right = false;
-	left = false;
-	for (var r = 0; r < brickR; r++)
-	{
-		bricks[r] = [];
-		for (var c = 0; c < brickC; c++)
-		{
-			// random int from 1 - 5
-			bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
-		}
-	}
-	gameInit = true;
-	gameOver = false;
-	gameWon = false;
-	score = 0;
-}
-
-// --------------------
 //	event handlers
 // --------------------
 
@@ -164,12 +204,18 @@ function keyPressHandler (key)
 		if (gameInit)
 		{
 			gameInit = false;
+			startPause = true;
 		}
 		// restart game
 		else if (gameOver || gameWon)
 		{
 			initializeVars ();
 			gameInit = false;
+			startPause = true;
+		}
+		else
+		{
+			pause = !pause;
 		}
 	}
 }
@@ -410,6 +456,29 @@ function drawBricks ()
 	}
 }
 
+// draw countdown to game start
+function drawCountdown ()
+{
+	var countdown = Math.floor (startPauseTimer / 100);
+	if (countdown == 0)
+	{
+		countdown = "g o";
+	}
+	board.font = "Lighter 50px Helvetica";
+	board.textAlign = "center";
+	board.fillStyle = "#555555";
+	board.fillText (countdown, boardW / 2, boardH / 2);
+}
+
+// draw pause message
+function drawPause ()
+{
+	board.font = "Lighter 50px Helvetica";
+	board.textAlign = "center";
+	board.fillStyle = "#555555";
+	board.fillText ("p a u s e", boardW / 2, boardH / 2);
+}
+
 // --------------------
 //	draw game screens
 // --------------------
@@ -424,15 +493,16 @@ function drawGameInit ()
 	board.font = "Lighter 50px Helvetica";
 	board.textAlign = "center";
 	board.fillStyle = "#555555";
-	board.fillText ("p l a y", boardW / 2, boardH / 2 - 150);
-	board.fillText ("b r e a k o u t", boardW / 2, boardH / 2 - 75);
+	board.fillText ("p l a y", boardW / 2, boardH / 2 - 200);
+	board.fillText ("b r e a k o u t", boardW / 2, boardH / 2 - 100);
 	board.fillText ("- - - - - - - - - - - - - - -", boardW / 2, boardH / 2);
 
 	// draw subtitle
 	board.font = "Lighter 20px Helvetica";
 	board.fillText ("< -   - >   t o   m o v e", boardW / 2, boardH / 2 + 50);
 	board.fillText ("[ s p a c e ]   t o   b e g i n", boardW / 2, boardH / 2 + 100);
-	board.fillText ("g o o d   l u c k", boardW / 2, boardH / 2 + 150);
+	board.fillText ("[ s p a c e ]   t o   p a u s e", boardW / 2, boardH / 2 + 150);
+	board.fillText ("g o o d   l u c k", boardW / 2, boardH / 2 + 200);
 }
 
 // draw game over screen
@@ -462,7 +532,7 @@ function drawGameOver ()
 		var str = "y o u   c l e a r e d   " + score + "   b r i c k s";
 	}
 	board.fillText (str, boardW / 2, boardH / 2 + 50);
-	board.fillText ("[ s p a c e ]   t o  t r y   a g a i n", boardW / 2, boardH / 2 + 100);
+	board.fillText ("[ s p a c e ]   t o   t r y   a g a i n", boardW / 2, boardH / 2 + 100);
 }
 
 // draw game won screen
