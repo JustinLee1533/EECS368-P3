@@ -12,17 +12,17 @@
 var canvas = document.getElementById ("myCanvas");
 var board = canvas.getContext ("2d");
 var boardW = 600;
-var boardH = 700;
+var boardH = 705;
 board.canvas.width = boardW;
 board.canvas.height = boardH;
-var text = document.getElementById ("p1");
 
 // ball variables
 var ballX = boardW / 2;
 var ballY = boardH * 3 / 4;
+var ballO = 5;
 var ballR = 10;
-var ballDX = 2;
-var ballDY = -2;
+var ballDX = 1.5;
+var ballDY = -1.5;
 
 // paddle variables
 var paddleW = 80;
@@ -34,7 +34,7 @@ var right = false;
 var left = false;
 
 // brick variables
-var brickR = 15;
+var brickR = 16;
 var brickC = 10;
 var brickO = 5;
 var brickW = (boardW - brickO * (brickC + 1)) / brickC;
@@ -79,7 +79,34 @@ function keyPressHandler (key)
 	else if (key.keyCode == 32)
 	{
 		// start game
-		gameInit = false;
+		if (gameInit)
+		{
+			gameInit = false;
+		}
+		// restart game
+		else if (gameOver || gameWon)
+		{
+			// reset variables
+			ballX = boardW / 2;
+			ballY = boardH * 3 / 4;
+			ballDX = 1.5;
+			ballDY = -1.5;
+			paddleX = boardW / 2 - paddleW / 2;
+			right = false;
+			left = false;
+			bricks = [[]];
+			for (var r = 0; r < brickR; r++)
+			{
+				bricks[r] = [];
+				for (var c = 0; c < brickC; c++)
+				{
+					bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
+				}
+			}
+			gameOver = false;
+			gameWon = false;
+			score = 0;
+		}
 	}
 }
 
@@ -104,7 +131,7 @@ function keyReleaseHandler (key)
 // --------------------
 
 // call run every 10 ms
-var interval = setInterval (run, 10);
+setInterval (run, 10);
 
 // run game
 function run ()
@@ -124,7 +151,7 @@ function run ()
 	{
 		drawGameWon ();
 	}
-	// game is still going
+	// game is running
 	else
 	{
 		// update positions
@@ -134,8 +161,9 @@ function run ()
 		checkBrickHit ();
 		checkBounce ();
 		checkgameWon ();
+		speedUp ();
 
-		// clear display
+		// clear board
 		board.clearRect (0, 0, boardW, boardH);
 
 		// draw updated board
@@ -160,11 +188,11 @@ function moveBall ()
 function movePaddle ()
 {
 	// move paddle
-	if (right && (paddleX < boardW - paddleW))
+	if (right && (paddleX < boardW - paddleW - paddleO))
 	{
 		paddleX += 4;
 	}
-	else if (left && paddleX > 0)
+	else if (left && paddleX > paddleO)
 	{
 		paddleX -= 4;
 	}
@@ -173,7 +201,7 @@ function movePaddle ()
 // check if ball hits paddle or bottom
 function checkPaddleHit ()
 {
-	if ((ballY + ballDY) > (boardH - ballR - paddleO))
+	if (ballY + ballDY > boardH - ballR - paddleO)
 	{
 		// hit paddle
 		if (ballX > paddleX && ballX < paddleX + paddleW)
@@ -199,7 +227,7 @@ function checkBrickHit ()
 			{
 				var brickX = brickO + c * (brickW + brickO);
 				var brickY = brickO + r * (brickH + brickO);
-				if ((ballX > brickX && ballX < (brickX + brickW)) && (ballY > brickY && ballY < brickY + brickH))
+				if (((ballX > brickX) && (ballX < brickX + brickW)) && ((ballY > brickY) && (ballY < brickY + brickH)))
 				{
 					ballDY = -ballDY;
 					bricks[r][c] = 0;
@@ -214,13 +242,13 @@ function checkBrickHit ()
 function checkBounce ()
 {
 	// bounce off sides
-	if ((ballX + ballDX) > (boardW - ballR) || (ballX + ballDX) < ballR)
+	if ((ballX + ballDX) > (boardW - ballR - ballO) || (ballX + ballDX) < (ballR + ballO))
 	{
 		ballDX = -ballDX;
 	}
 
 	// bounce off top
-	if ((ballY + ballDY) < ballR)
+	if ((ballY + ballDY) < (ballR + ballO))
 	{
 		ballDY = -ballDY;
 	}
@@ -242,6 +270,47 @@ function checkgameWon ()
 	}
 }
 
+// update ball dx and dy based on rows cleared
+function speedUp ()
+{
+	// count rows cleared
+	var rowsCleared = 0;
+	for (var r = 0; r < brickR; r++)
+	{
+		var rowCleared = true;
+		for (var c = 0; c < brickC; c++)
+		{
+			if (bricks[r][c] != 0)
+			{
+				rowCleared = false;
+			}
+		}
+		if (rowCleared)
+		{
+			rowsCleared++;
+		}
+	}
+
+	// update speed
+	var speed = 1.5 + rowsCleared * 0.1;
+	if (ballDX > 0)
+	{
+		ballDX = speed;
+	}
+	else
+	{
+		ballDX = -speed;
+	}
+	if (ballDY > 0)
+	{
+		ballDY = speed;
+	}
+	else
+	{
+		ballDY = -speed;
+	}
+}
+
 // --------------------
 //	draw display
 // --------------------
@@ -251,7 +320,8 @@ function drawBall ()
 {
 	board.beginPath ();
 	board.arc (ballX, ballY, ballR, 0, Math.PI * 2, false);
-	board.fillStyle = "#000000";
+	// dark gray
+	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
 }
@@ -261,7 +331,8 @@ function drawPaddle ()
 {
 	board.beginPath ();
 	board.rect (paddleX, paddleY, paddleW, paddleH);
-	board.fillStyle = "#000000";
+	// dark gray
+	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
 }
@@ -273,13 +344,16 @@ function drawBricks ()
 	{
 		for (var c = 0; c < brickC; c++)
 		{
+			// brick is not empty
 			if (bricks[r][c] != 0)
 			{
+				// calculate position
 				var brickX = brickO + c * (brickW + brickO);
 				var brickY = brickO + r * (brickH + brickO);
 
 				board.beginPath ();
 				board.rect (brickX, brickY, brickW, brickH);
+				// get color
 				var fill = bricks[r][c];
 				switch (fill)
 				{
@@ -311,32 +385,70 @@ function drawBricks ()
 // draw game started screen
 function drawGameInit ()
 {
-	
-	board.font = "70px Helvetica";
+	// clear board
+	board.clearRect (0, 0, boardW, boardH);
+
+	// draw title
+	board.font = "Lighter 50px Helvetica";
 	board.textAlign = "center";
-	board.fillStyle = "black";
-	board.fillText ("Welcome", boardW/2, boardH/2);
+	board.fillStyle = "#555555";
+	board.fillText ("p l a y", boardW / 2, boardH / 2 - 150);
+	board.fillText ("b r e a k o u t", boardW / 2, boardH / 2 - 75);
+	board.fillText ("- - - - - - - - - - - - - - -", boardW / 2, boardH / 2);
+
+	// draw subtitle
+	board.font = "Lighter 20px Helvetica";
+	board.fillText ("< -   - >   t o   m o v e", boardW / 2, boardH / 2 + 50);
+	board.fillText ("[ s p a c e ]   t o   b e g i n", boardW / 2, boardH / 2 + 100);
+	board.fillText ("g o o d   l u c k", boardW / 2, boardH / 2 + 150);
 }
 
 // draw game over screen
 function drawGameOver ()
 {
-	board.font = "70px Helvetica";
-	board.textAlign = "center";
-	board.fillStyle = "black";
-	board.fillText ("Game Over", boardW/2, boardH/2);
+	// clear board
+	board.clearRect (0, 0, boardW, boardH);
 
-	board.font = "30px Helvetica";
+	// redraw bricks
+	drawBricks ();
+
+	// draw title
+	board.font = "Lighter 50px Helvetica";
 	board.textAlign = "center";
-	board.fillStyle = "black";
-	board.fillText ("You cleared " + score + " bricks", boardW/2, boardH/2 + 50);
+	board.fillStyle = "#555555";
+	board.fillText ("g a m e   o v e r", boardW / 2, boardH / 2 - 75);
+	board.fillText ("- - - - - - - - - - - - - - -", boardW / 2, boardH / 2);
+
+	// draw subtitle
+	board.font = "Lighter 20px Helvetica";
+	if (score == 1)
+	{
+		var str = "y o u   c l e a r e d   " + score + "   b r i c k";
+	}
+	else
+	{
+		var str = "y o u   c l e a r e d   " + score + "   b r i c k s";
+	}
+	board.fillText (str, boardW / 2, boardH / 2 + 50);
+	board.fillText ("[ s p a c e ]   t o  t r y   a g a i n", boardW / 2, boardH / 2 + 100);
 }
 
 // draw game won screen
 function drawGameWon ()
 {
-	board.font = "70px Helvetica";
+	// clear board
+	board.clearRect (0, 0, boardW, boardH);
+
+	// draw title
+	board.font = "Lighter 50px Helvetica";
 	board.textAlign = "center";
-	board.fillStyle = "black";
-	board.fillText ("You win!", boardW/2, boardH/2);
+	board.fillStyle = "#555555";
+	board.fillText ("y o u   w i n !", boardW / 2, boardH / 2 - 75);
+	board.fillText ("- - - - - - - - - - - - - - -", boardW / 2, boardH / 2);
+
+	// draw subtitle
+	board.font = "Lighter 20px Helvetica";
+	var str = "y o u   c l e a r e d   a l l   " + score + "   b r i c k s";
+	board.fillText (str, boardW / 2, boardH / 2 + 50);
+	board.fillText ("[ s p a c e ]   t o   p l a y   a g a i n", boardW / 2, boardH / 2 + 100);
 }
