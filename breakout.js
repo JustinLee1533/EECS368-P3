@@ -50,6 +50,7 @@ for (var r = 0; r < brickR; r++)
 }
 
 // game variables
+var gameInit = true;
 var gameOver = false;
 var gameWon = false;
 var score = 0;
@@ -65,12 +66,20 @@ function keyPressHandler (key)
 	// right arrow pressed
 	if (key.keyCode == 39)
 	{
+		// move paddle right
 		right = true;
 	}
 	// left arrow pressed
 	else if (key.keyCode == 37)
 	{
+		// move paddle left
 		left = true;
+	}
+	// space bar pressed
+	else if (key.keyCode == 32)
+	{
+		// start game
+		gameInit = false;
 	}
 }
 
@@ -94,14 +103,19 @@ function keyReleaseHandler (key)
 //	run program
 // --------------------
 
-// call update every 10 ms
-var interval = setInterval (update, 10);
+// call run every 10 ms
+var interval = setInterval (run, 10);
 
-// update board with movement of ball and paddle and redraw
-function update ()
+// run game
+function run ()
 {
+	// game is initializing
+	if (gameInit)
+	{
+		drawGameInit ();
+	}
 	// game is over
-	if (gameOver)
+	else if (gameOver)
 	{
 		drawGameOver ();
 	}
@@ -292,6 +306,16 @@ function drawBricks ()
 			}
 		}
 	}
+}
+
+// draw game started screen
+function drawGameInit ()
+{
+	
+	board.font = "70px Helvetica";
+	board.textAlign = "center";
+	board.fillStyle = "black";
+	board.fillText ("Welcome", boardW/2, boardH/2);
 }
 
 // draw game over screen
