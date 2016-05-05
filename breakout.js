@@ -58,10 +58,10 @@ function run ()
 }
 
 // --------------------
-//	key variables
+//	important constants
 // --------------------
 
-// board variables
+// board
 var canvas = document.getElementById ("myCanvas");
 var board = canvas.getContext ("2d");
 var boardW = 600;
@@ -70,46 +70,72 @@ var boardH = 705;
 board.canvas.width = boardW;
 board.canvas.height = boardH;
 
-// ball variables
-var ballX = boardW / 2;
-var ballY = boardH * 3 / 4;
+// ball
 var ballO = 5;
 var ballR = 10;
-var ballDX = 1.5;
-var ballDY = -1.5;
 
-// paddle variables
+// paddle
 var paddleW = 80;
 var paddleH = 20;
 var paddleO = 5;
-var paddleX = boardW / 2 - paddleW / 2;
 var paddleY = boardH - paddleH - paddleO;
-var right = false;
-var left = false;
 
-// brick variables
+// brick
 var brickR = 16;
 var brickC = 10;
 var brickO = 5;
 var brickW = (boardW - brickO * (brickC + 1)) / brickC;
 var brickH = 20;
 var bricks = [[]];
-// populate array
-for (var r = 0; r < brickR; r++)
-{
-	bricks[r] = [];
-	for (var c = 0; c < brickC; c++)
-	{
-		// random int from 1 - 5
-		bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
-	}
-}
 
-// game variables
-var gameInit = true;
-var gameOver = false;
-var gameWon = false;
-var score = 0;
+
+// --------------------
+//	important variables
+// --------------------
+
+// ball
+var ballX;
+var ballY;
+var ballDX;
+var ballDY;
+
+// paddle
+var paddleX;
+var right;
+var left;
+
+// game
+var gameInit;
+var gameOver;
+var gameWon;
+var score;
+
+initializeVars ();
+
+// initialize variables
+function initializeVars ()
+{
+	ballX = boardW / 2;
+	ballY = boardH * 3 / 4;
+	ballDX = 1.5;
+	ballDY = 1.5;
+	paddleX = boardW / 2 - paddleW / 2;
+	right = false;
+	left = false;
+	for (var r = 0; r < brickR; r++)
+	{
+		bricks[r] = [];
+		for (var c = 0; c < brickC; c++)
+		{
+			// random int from 1 - 5
+			bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
+		}
+	}
+	gameInit = true;
+	gameOver = false;
+	gameWon = false;
+	score = 0;
+}
 
 // --------------------
 //	event handlers
@@ -142,26 +168,8 @@ function keyPressHandler (key)
 		// restart game
 		else if (gameOver || gameWon)
 		{
-			// reset variables
-			ballX = boardW / 2;
-			ballY = boardH * 3 / 4;
-			ballDX = 1.5;
-			ballDY = -1.5;
-			paddleX = boardW / 2 - paddleW / 2;
-			right = false;
-			left = false;
-			bricks = [[]];
-			for (var r = 0; r < brickR; r++)
-			{
-				bricks[r] = [];
-				for (var c = 0; c < brickC; c++)
-				{
-					bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
-				}
-			}
-			gameOver = false;
-			gameWon = false;
-			score = 0;
+			initializeVars ();
+			gameInit = false;
 		}
 	}
 }
