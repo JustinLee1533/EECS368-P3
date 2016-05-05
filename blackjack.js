@@ -1,37 +1,31 @@
 /*
 *	@author: Justin Lee
-*	@date:	2017/04/16
+*	@date:	2016/05/04
 *	@name:	blackjack.js
+* @about: simple blackjack game that has betting and interacts with blackjack.html
+* @github: https://github.com/JustinLee1533/EECS368-P3.git
 */
-//TODO: ACe logic, betting logic
 var gameDeck = new Deck();	//Deck object
 var gameDealer = new Dealer();  //Dealer object
 var gamePlayer = new Player(); //player object
-var gameGame = new game();
-var playerLost = false;
-var gameOver = false;
-var ducats = 200;
-var bet = 0;
-var playNumber = 0;
+var gameGame = new game(); //game object
+var playerLost = false; //boolean that keeps track of whether the player lost
+var gameOver = false; //boolean that keeps track whether the current game is over
+var ducats = 200; //boolean that keeps track of the player's currency
+var bet = 0;  // number that keeps track of the current bet
+var playNumber = 0; //number that keeps track of the current game numbers
 
+/*
+	@Pre: Called from New Game button in HTML
+	@Post: sets bet, increments play number, calls game.play() function
+	@Return: None
+*/
 function playGame()
 {
   bet = Number(document.getElementById("bet").value); //Locks in bet as soon as they hit new game
   playNumber++;
-  console.log("Play Number: "+playNumber+" and gameOver status: "+gameOver);
   gameGame.play();
 }
-
-function hit()
-{
-  gamePlayer.setHit();
-}
-
-function stay()
-{
-  gamePlayer.setStands();
-}
-
 
 /*
 	@Pre: None
@@ -56,8 +50,6 @@ function Player()
   this.hand = [];
   this.hits =false;
   this.stands = false;
-
-
 }
 
 /*
@@ -86,17 +78,21 @@ function stand()
 	@Post: A game object is created
 	@Return: None
 */
-function game() //maybe needs to take parameters of a deck, player, and dealer?, return true if player wins, false if dealer wins?
+function game()
 {
 
-
+  /*
+  	@Pre: game object is created, function called from playGame()
+  	@Post: initializes the game, deals cards, determines if there is a blackjack
+  	@Return: void if forfeit, win, or loss
+  */
   this.play = function()
   {
     document.getElementById("p3").innerHTML = ducats;
 
     console.log("playing game");
 
-    if((playNumber >1)&&(gameOver == false))
+    if((playNumber >1)&&(gameOver == false)) //check to make sure they're not trying to start a new game during an active one, if they do, its a forfeit
     {
       gameOver = true;
       ducats = ducats - bet;
@@ -105,8 +101,6 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       return;
 
     }
-
-
     //ensure the hands are cleared
     gameDealer.hand = [];
     gamePlayer.hand = [];
@@ -141,30 +135,31 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     this.printHands(false);
 
     //check to see if either player has a blackjack
-    if((this.handVal(gamePlayer.hand))==21 && (this.handVal(gamePlayer.hand) ==21)) //TODO: maybe code would be prettier with a busts function
+    if((this.handVal(gamePlayer.hand))==21 && (this.handVal(gameDealer.hand) ==21))
     {
       //game is a tie, both players have natual black jack
-      return("tie");
+      alert("Both player's have blackjacks, tie");
+      gameOver = true;
+
+      return;
     }else if ((this.handVal(gamePlayer.hand))==21)
     {
       //player wins natural blackjack
+      alert("You win a natural blackjack");
+
       gameOver = true;
       ducats = ducats + bet;
       document.getElementById("p3").innerHTML = ducats;
-
-      alert("You win a natural blackjack");
-
-      return(true);
-    }else if (this.handVal(gamePlayer.hand) ==21)
+      return;
+    }else if (this.handVal(gameDealer.hand) ==21)
     {
       gameOver = true;
       ducats = ducats - bet;
       document.getElementById("p3").innerHTML = ducats;
 
       alert("Dealer has natural blackjack");
-
       //dealer wins natural blackjack
-      return(false);
+      return;
     }
   }
 
@@ -190,11 +185,10 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
           document.getElementById("p3").innerHTML = ducats;
 
           alert("You lose");
-          return(false);
+          return;
         }else if((this.handVal(gamePlayer.hand))==21)//call stand for the player
         {
           alert("You have 21");
-
           this.stand();
         }
       }
@@ -203,7 +197,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     /*
     	@Pre: called from stand(), the player has not lost the game
     	@Post: dealer hits until the value of its hand is at least 17, changes betting values
-    	@Return: The value of their hand
+    	@Return: Tvoid if there is a win/loss/tie
     */
   this.stand = function()
   {
@@ -223,31 +217,32 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
           ducats = ducats + bet;
           document.getElementById("p3").innerHTML = ducats;
           alert("dealer busts, you win");
-          return(false);
+          return;
         }
 
       }
-        if((this.handVal(gamePlayer.hand))>(this.handVal(gameDealer.hand)))
+        if((this.handVal(gamePlayer.hand))>(this.handVal(gameDealer.hand)))//player wins
         {
           gameOver = true;
           this.printHands(true);
           alert("You Win");
           ducats = ducats + bet;
           document.getElementById("p3").innerHTML = ducats;
-          return(true); //player wins
-        }else if ((this.handVal(gamePlayer.hand))<(this.handVal(gameDealer.hand)))
+          return;
+        }else if ((this.handVal(gamePlayer.hand))<(this.handVal(gameDealer.hand)))//dealer wins
         {
           gameOver = true;
           this.printHands(true);
           ducats = ducats - bet;
           document.getElementById("p3").innerHTML = ducats;
           alert("You Lose");
-          return(false);  //dealer wins
-        }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand)))
+          return;
+        }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand))) //tie
         {
           gameOver = true;
           this.printHands(true);
           alert("The game is a tie");
+          return;
         }
       }
     }
@@ -267,25 +262,19 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     //ace check
     var aceFlag = false;
     var aceIndex;
-    for(var i = 0;((i<arr.length)&&!(aceFlag)); i++)
+    for(var i = 0;((i<arr.length)&&!(aceFlag)); i++) // check to see if there is an ace in the hand
     {
-      if(arr[i].rank == 1)
+      if(arr[i].rank == 1)  //note the index at which the ace occurs
       {
-      //  var temporaryCard = arr[i];
         aceFlag = true;
-      //  otherArr[i].rank = -1;
         aceIndex = i;
-
       }
-      //otherArr[i] = temporaryCard;
     }
 
-
-    for(var i=0; i< arr.length; i++)
+    for(var i=0; i< arr.length; i++) //compute two seperate values one for the high ace and one for the low, if there are no aces, values will be the same
     {
       var tempVal = arr[i].rank;
       var othertempVal = tempVal;
-
       console.log("Value of card "+i+" is: "+arr[i].rank);
       if(tempVal>=10)
       {
@@ -306,7 +295,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       console.log("otherSum: "+otherSum);
     }
 
-    if((otherSum<=21) && (aceFlag == true))
+    if((otherSum<=21) && (aceFlag == true)) //return the higher sum if its not over 21, else the lower
     {
       return(otherSum);
     }else
@@ -323,7 +312,7 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
   this.printHands = function(flag)
   {
     console.log("printing hands");
-    var j = 1;
+    var j = 1; //variable used to toggle whether to print the dealers first card or not afte the game is over
     var hiddenHand =[];
     hiddenHand[0] = "X";
     console.log("Dealers Hand");
@@ -334,14 +323,13 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
       j = 0;
     }
 
-    for(var i = j; i<gameDealer.hand.length; i++)
+    for(var i = j; i<gameDealer.hand.length; i++) //print dealers hand
     {
-      console.log(i);
       var tempCard = gameDealer.hand[i];
       var rankNo = tempCard.rank;
       var suitS = tempCard.suit;
 
-      if(rankNo == 11)
+      if(rankNo == 11)//convert certain ranks to face cards or ace
       {
         rankNo = "J";
       }else if(rankNo == 12)
@@ -365,12 +353,11 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
     //print the dealers hand, all cards except the first
     document.getElementById("p1").innerHTML = hiddenHand + dealerHandVal;
 
-
   console.log("Players Hand");
   console.log("Players Hand length: "+gamePlayer.hand.length);
     //print the players hand, all cards
     var playerHand =[];
-    for(var i=0; i<gamePlayer.hand.length; i++)
+    for(var i=0; i<gamePlayer.hand.length; i++) //print players hand
     {
       var tempCard = gamePlayer.hand[i];
       var rankNo = tempCard.rank;
@@ -401,9 +388,8 @@ function game() //maybe needs to take parameters of a deck, player, and dealer?,
   }
 }
 
-
 /*
-	@Pre: None
+	@Pre: rank and suit are passed in
 	@Post: A card object is created
 	@Return: None
 */
