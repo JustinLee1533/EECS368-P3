@@ -35,7 +35,6 @@ var brickW = (boardW - brickO * (brickC + 1)) / brickC;
 var brickH = 20;
 var bricks = [[]];
 
-
 // --------------------
 //	important variables
 // --------------------
@@ -213,6 +212,7 @@ function keyPressHandler (key)
 			gameInit = false;
 			startPause = true;
 		}
+		// toggle pause
 		else
 		{
 			pause = !pause;
