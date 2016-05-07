@@ -89,7 +89,7 @@ function game()
   this.play = function()
   {
     document.getElementById("p3").innerHTML = ducats;
-
+    document.getElementById("p0").innerHTML = "Starting new game";
     console.log("playing game");
 
     if((playNumber >1)&&(gameOver == false)) //check to make sure they're not trying to start a new game during an active one, if they do, its a forfeit
@@ -97,7 +97,7 @@ function game()
       gameOver = true;
       ducats = ducats - bet;
       document.getElementById("p3").innerHTML = ducats;
-      alert("You forfeit the game and lose your bet");
+      document.getElementById("p0").innerHTML = "You forfeit the game and lose your bet. Press New Game";
       return;
 
     }
@@ -138,14 +138,14 @@ function game()
     if((this.handVal(gamePlayer.hand))==21 && (this.handVal(gameDealer.hand) ==21))
     {
       //game is a tie, both players have natual black jack
-      alert("Both player's have blackjacks, tie");
+      document.getElementById("p0").innerHTML = "Both player's have blackjacks, tie.  Press New Game";
       gameOver = true;
 
       return;
     }else if ((this.handVal(gamePlayer.hand))==21)
     {
       //player wins natural blackjack
-      alert("You win a natural blackjack");
+      document.getElementById("p0").innerHTML = "You win a natural blackjack. Press New Game.";
 
       gameOver = true;
       ducats = ducats + bet;
@@ -157,7 +157,7 @@ function game()
       ducats = ducats - bet;
       document.getElementById("p3").innerHTML = ducats;
 
-      alert("Dealer has natural blackjack");
+      document.getElementById("p0").innerHTML = "Dealer has natural blackjack. Press New Game";
       //dealer wins natural blackjack
       return;
     }
@@ -184,11 +184,11 @@ function game()
           ducats = ducats - bet;
           document.getElementById("p3").innerHTML = ducats;
 
-          alert("You lose");
+          document.getElementById("p0").innerHTML = "You lose. Press New Game.";
           return;
         }else if((this.handVal(gamePlayer.hand))==21)//call stand for the player
         {
-          alert("You have 21");
+          document.getElementById("p0").innerHTML = "You have 21. Dealer's Turn.";
           this.stand();
         }
       }
@@ -216,7 +216,7 @@ function game()
           this.printHands(true);
           ducats = ducats + bet;
           document.getElementById("p3").innerHTML = ducats;
-          alert("dealer busts, you win");
+          document.getElementById("p0").innerHTML = "dealer busts, you win, press New Game";
           return;
         }
 
@@ -225,7 +225,7 @@ function game()
         {
           gameOver = true;
           this.printHands(true);
-          alert("You Win");
+          document.getElementById("p0").innerHTML = "You Win, Press New Game";
           ducats = ducats + bet;
           document.getElementById("p3").innerHTML = ducats;
           return;
@@ -235,13 +235,13 @@ function game()
           this.printHands(true);
           ducats = ducats - bet;
           document.getElementById("p3").innerHTML = ducats;
-          alert("You Lose");
+          document.getElementById("p0").innerHTML = "You Lose, Press New Game";
           return;
         }else if((this.handVal(gamePlayer.hand))==(this.handVal(gameDealer.hand))) //tie
         {
           gameOver = true;
           this.printHands(true);
-          alert("The game is a tie");
+          document.getElementById("p0").innerHTML = "The game is a tie, Press New Game";
           return;
         }
       }
@@ -351,7 +351,12 @@ function game()
     var dealerHandVal = "; Value of hand: "+this.handVal(gameDealer.hand);
 
     //print the dealers hand, all cards except the first
-    document.getElementById("p1").innerHTML = hiddenHand + dealerHandVal;
+    document.getElementById("p1").innerHTML = hiddenHand;
+
+    if(flag)
+    {
+        document.getElementById("p1").innerHTML = hiddenHand + dealerHandVal; 
+    }
 
   console.log("Players Hand");
   console.log("Players Hand length: "+gamePlayer.hand.length);
