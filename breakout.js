@@ -1,3 +1,4 @@
+
 // -----------------------------------------
 // 	breakout.js
 //	eecs 368 final project
@@ -13,6 +14,7 @@ var canvas = document.getElementById ("myCanvas");
 var board = canvas.getContext ("2d");
 var boardW = 600;
 var boardH = 705;
+
 // set canvas width and height
 board.canvas.width = boardW;
 board.canvas.height = boardH;
@@ -27,13 +29,16 @@ var paddleH = 20;
 var paddleO = 5;
 var paddleY = boardH - paddleH - paddleO;
 
-// brick
+// bricks
 var brickR = 18;
 var brickC = 10;
 var brickO = 5;
 var brickW = (boardW - brickO * (brickC + 1)) / brickC;
 var brickH = 20;
-var bricks = [[]];
+
+// lives
+var lifeO = 5;
+var lifeR = 10;
 
 // --------------------
 //	important variables
@@ -50,14 +55,19 @@ var paddleX;
 var right;
 var left;
 
+// bricks
+var bricks;
+
 // game
 var gameInit;
 var gameOver;
 var gameWon;
+var gameLifeLost;
 var score;
 var pause;
 var startPause;
 var startPauseTimer;
+var lives;
 
 // run initialization
 initializeVars ();
@@ -65,13 +75,50 @@ initializeVars ();
 // initialize variables
 function initializeVars ()
 {
+	placeBall ();
+	placePaddle ();
+	fillBricks ();
+	gameInit = true;
+	gameOver = false;
+	gameWon = false;
+	gameLifeLost = false;
+	score = 0;
+	pause = false;
+	startPause = false;
+	lives = 3;
+	startCountdown ();
+}
+
+// place ball
+function placeBall ()
+{
 	ballX = boardW / 2;
 	ballY = boardH * 3 / 4;
-	ballDX = 1.5;
+	// random chance to move left or right to start
+	var dx = Math.floor ((Math.random () * 2) + 1);
+	if (dx == 1)
+	{
+		ballDX = 1.5;
+	}
+	else
+	{
+		ballDX = -1.5;
+	}
 	ballDY = -1.5;
+}
+
+// place paddle
+function placePaddle ()
+{
 	paddleX = boardW / 2 - paddleW / 2;
 	right = false;
 	left = false;
+}
+
+// fill brick array
+function fillBricks ()
+{
+	bricks = [[]];
 	for (var r = 0; r < brickR; r++)
 	{
 		bricks[r] = [];
@@ -81,12 +128,12 @@ function initializeVars ()
 			bricks [r][c] = Math.floor ((Math.random () * 5) + 1);
 		}
 	}
-	gameInit = true;
-	gameOver = false;
-	gameWon = false;
-	score = 0;
-	pause = false;
-	startPause = false;
+}
+
+// start countdown
+function startCountdown ()
+{
+	startPause = true;
 	startPauseTimer = 400;
 }
 
@@ -115,6 +162,11 @@ function playBreakout ()
 	{
 		drawGameWon ();
 	}
+	// life lost
+	else if (gameLifeLost)
+	{
+		drawGameLifeLost ();
+	}
 	// game is running
 	else
 	{
@@ -125,7 +177,7 @@ function playBreakout ()
 // run main part of game
 function runGame ()
 {
-	// initial pause
+	// initial countdown
 	if (startPause)
 	{
 		startPauseTimer--;
@@ -142,6 +194,8 @@ function runGame ()
 		drawPaddle ();
 		drawBricks ();
 		drawCountdown ();
+		drawLives ();
+		drawScore ();
 	}
 	// game is paused
 	else if (pause)
@@ -173,6 +227,8 @@ function runGame ()
 		drawBall ();
 		drawPaddle ();
 		drawBricks ();
+		drawLives ();
+		drawScore ();
 	}
 }
 
@@ -209,13 +265,24 @@ function keyPressHandler (key)
 		else if (gameOver || gameWon)
 		{
 			initializeVars ();
+			startCountdown ();
 			gameInit = false;
-			startPause = true;
+
+		}
+		// restart on next life
+		else if (gameLifeLost)
+		{
+			placeBall ();
+			placePaddle ();
+			startCountdown ();
+			gameLifeLost = false;
 		}
 		// toggle pause
 		else
 		{
-			pause = !pause;
+			if (!startPause) {
+				pause = !pause;
+			}
 		}
 	}
 }
@@ -278,7 +345,15 @@ function checkPaddleHit ()
 		// hit bottom
 		else
 		{
-			gameOver = true;
+			lives--;
+			if (lives == 0)
+			{
+				gameOver = true;
+			}
+			else
+			{
+				gameLifeLost = true;
+			}
 		}
 	}
 }
@@ -394,7 +469,6 @@ function drawBall ()
 {
 	board.beginPath ();
 	board.arc (ballX, ballY, ballR, 0, Math.PI * 2, false);
-	// fill dark gray
 	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
@@ -405,7 +479,6 @@ function drawPaddle ()
 {
 	board.beginPath ();
 	board.rect (paddleX, paddleY, paddleW, paddleH);
-	// fill dark gray
 	board.fillStyle = "#555555";
 	board.fill ();
 	board.closePath ();
@@ -456,6 +529,32 @@ function drawBricks ()
 	}
 }
 
+// draw lives remaining
+function drawLives ()
+{
+	for (var i = 0; i < lives; i++)
+	{
+		var lifeX = boardW - lifeO * 3 - (i + 1) * (lifeR * 2 + lifeO);
+		var lifeY = lifeO * 3 + lifeR;
+
+		board.beginPath ();
+		board.arc (lifeX, lifeY, lifeR, 0, Math.PI * 2, false);
+		board.fillStyle = "#555555";
+		board.fill ();
+		board.closePath ();
+
+	}
+}
+
+// draw score
+function drawScore ()
+{
+	board.font = "Lighter 20px Helvetica";
+	board.textAlign = "center";
+	board.fillStyle = "#555555";
+	board.fillText (score, lifeO * 4 + lifeR * 2, lifeO * 7)
+}
+
 // draw countdown to game start
 function drawCountdown ()
 {
@@ -502,7 +601,7 @@ function drawGameInit ()
 	board.fillText ("< -   - >   t o   m o v e", boardW / 2, boardH / 2 + 50);
 	board.fillText ("[ s p a c e ]   t o   b e g i n", boardW / 2, boardH / 2 + 100);
 	board.fillText ("[ s p a c e ]   t o   p a u s e", boardW / 2, boardH / 2 + 150);
-	board.fillText ("g o o d   l u c k", boardW / 2, boardH / 2 + 200);
+	board.fillText ("y o u   h a v e   t h r e e   l i v e s", boardW / 2, boardH / 2 + 200);
 }
 
 // draw game over screen
@@ -553,4 +652,24 @@ function drawGameWon ()
 	var str = "y o u   c l e a r e d   a l l   " + score + "   b r i c k s";
 	board.fillText (str, boardW / 2, boardH / 2 + 50);
 	board.fillText ("[ s p a c e ]   t o   p l a y   a g a i n", boardW / 2, boardH / 2 + 100);
+}
+
+// draw game life lost screen
+function drawGameLifeLost ()
+{
+	// clear board
+	board.clearRect (0, 0, boardW, boardH);
+
+	// redraw board
+	drawBricks ();
+	drawPaddle ();
+	drawLives ();
+	drawScore ();
+
+	// draw subtitle
+	board.font = "Lighter 20px Helvetica";
+	board.textAlign = "center";
+	board.fillStyle = "#555555";
+	board.fillText ("[ s p a c e ]   t o   k e e p   g o i n g", boardW / 2, boardH / 2);
+
 }
