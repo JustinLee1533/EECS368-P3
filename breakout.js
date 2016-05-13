@@ -155,12 +155,37 @@ function playBreakout ()
 	// game is over
 	else if (gameOver)
 	{
+
+		var breakoutpts = getUrlParam ("breakoutpts");
+		var blackjackpts = getUrlParam ("blackjackpts");
+		var blockrunnerpts = getUrlParam ("blockrunnerpts");
+
+		if (score > breakoutpts)
+		{
+			breakoutpts = score;
+		}
+
 		drawGameOver ();
+
+		window.location.href = "breakout.html?breakoutpts=" + breakoutpts + "&blackjackpts=" + blackjackpts + "&blockrunnerpts=" + blockrunnerpts;
+
 	}
 	// game is won
 	else if (gameWon)
 	{
+
+		var breakoutpts = getUrlParam ("breakoutpts");
+		var blackjackpts = getUrlParam ("blackjackpts");
+		var blockrunnerpts = getUrlParam ("blockrunnerpts");
+
+		if (score > breakoutpts)
+		{
+			breakoutpts = score;
+		}
+
 		drawGameWon ();
+
+		window.location.href = "breakout.html?breakoutpts=" + breakoutpts + "&blackjackpts=" + blackjackpts + "&blockrunnerpts=" + blockrunnerpts;
 	}
 	// life lost
 	else if (gameLifeLost)
@@ -260,14 +285,6 @@ function keyPressHandler (key)
 		{
 			gameInit = false;
 			startPause = true;
-		}
-		// restart game
-		else if (gameOver || gameWon)
-		{
-			initializeVars ();
-			startCountdown ();
-			gameInit = false;
-
 		}
 		// restart on next life
 		else if (gameLifeLost)
@@ -631,7 +648,6 @@ function drawGameOver ()
 		var str = "y o u   c l e a r e d   " + score + "   b r i c k s";
 	}
 	board.fillText (str, boardW / 2, boardH / 2 + 50);
-	board.fillText ("[ s p a c e ]   t o   t r y   a g a i n", boardW / 2, boardH / 2 + 100);
 }
 
 // draw game won screen
@@ -651,7 +667,6 @@ function drawGameWon ()
 	board.font = "Lighter 20px Helvetica";
 	var str = "y o u   c l e a r e d   a l l   " + score + "   b r i c k s";
 	board.fillText (str, boardW / 2, boardH / 2 + 50);
-	board.fillText ("[ s p a c e ]   t o   p l a y   a g a i n", boardW / 2, boardH / 2 + 100);
 }
 
 // draw game life lost screen
@@ -672,4 +687,14 @@ function drawGameLifeLost ()
 	board.fillStyle = "#555555";
 	board.fillText ("[ s p a c e ]   t o   k e e p   g o i n g", boardW / 2, boardH / 2);
 
+}
+
+
+function getUrlParam (param)
+{
+  param = param.replace(/([\[\](){}*?+^$.\\|])/g, "\\$1");
+  var regex = new RegExp("[?&]" + param + "=([^&#]*)");
+  var url   = decodeURIComponent(window.top.location.href);
+  var match = regex.exec(url);
+  return match ? match[1] : "";
 }

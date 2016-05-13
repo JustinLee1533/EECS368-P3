@@ -4,49 +4,92 @@
 	@file: blackjack.html
 -->
 <html>
-<head>
-  <title>Blackjack Game</title>
-  <script type="text/javascript" src="blackjack.js"> </script>
-</head>
-<body bgcolor="gray" text="black"> <!-- get this in a Css file  -->
 
-  <p id="p0"> Welcome to Blackjack! </p>
+	<head>
 
-  <p>Dealer's Hand</p>
-  <p id="p1">
-    No cards
-    <br> <br> <br>
-  </p>
+	  <title>Blackjack Game</title>
+	  <script type="text/javascript" src="blackjack.js"> </script>
 
-  <p>Your Hand</p>
+	  <!-- bootstrap css -->
 
-  <p id ="p2">
+	  <link href="bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
+	  <link href="bootstrap-3.3.6-dist/navbar.css" rel="stylesheet">
 
-    No cards
-      <br> <br> <br>
+	</head>
 
-  </p>
-  <br> <br> <br>
+	<body>
 
-  <button onclick="playGame()">New Game</button>
-  <button onclick="hit()">Hit</button>
-  <button onclick="stand()">Stand</button>
+		<!-- navbar -->
 
-  <br> <br> <br>
+		<div class="container">
+			<nav class="navbar navbar-default">
+				<div class="container-fluid">
 
-  This how many ducats you got:
-  <p id="p3">
-  </p>
-  Ener a bet: <input type="number" min="0" id="bet" value="0"><br>
+					<!-- title -->
 
-  <br> <br> <br>
+					<div class="navbar-header">
+						<a class="navbar-brand" href="index.html">Arcade</a>
+					</div>
 
-  <p>
-    How to play:<br>
-    Enter a new bet and press New Game.  If you press New Game in the middle of the game, you will forfeit your bet.<br>
-    As long as your hand does not exceed 21 you may press hit for a new card.  If you're happy with your hand, you can press Stand <br>
-    and the dealer will go.  The dealer must hit until 17 and doesn't have to hit on a soft 17.  You may bet more money than you currently have.<br>
-    However, you will go into the hole.  Excessive amount of time spent in the hole will result in a visit from the mafia.
-  </p>
-</body>
+					<!-- links -->
+
+					<div id="navbar" class="navbar-collapse collapse">
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="breakout.html">Breakout</a></li>
+							<li class="active"><a href="blackjack.html">Blackjack</a></li>
+							<li><a href="blockrunner.html">Block Runner</a></li>
+						</ul>
+					</div>
+
+				</div>
+			</nav>
+		</div>
+
+		<!-- game -->
+
+		<div class="container">
+
+		  <p id="p0"> Welcome to Blackjack! </p>
+
+		  <p>Dealer's Hand</p>
+		  <p id="p1">
+		    No cards
+		    <br> <br> <br>
+		  </p>
+
+		  <p>Your Hand</p>
+
+		  <p id ="p2">
+
+		    No cards
+		      <br> <br> <br>
+
+		  </p>
+		  <br> <br> <br>
+
+		  <button onclick="playGame()">New Game</button>
+		  <button onclick="hit()">Hit</button>
+		  <button onclick="stand()">Stand</button>
+
+		  <br> <br> <br>
+
+		  This how many ducats you got:
+		  <p id="p3">
+		  </p>
+		  Enter a bet: <input type="number" min="0" id="bet" value="0"><br>
+
+		  <br> <br> <br>
+
+		  <p>
+		    How to play:<br>
+		    Enter a new bet and press New Game.  If you press New Game in the middle of the game, you will forfeit your bet.<br>
+		    As long as your hand does not exceed 21 you may press hit for a new card.  If you're happy with your hand, you can press Stand <br>
+		    and the dealer will go.  The dealer must hit until 17 and doesn't have to hit on a soft 17.  You may bet more money than you currently have.<br>
+		    However, you will go into the hole.  Excessive amount of time spent in the hole will result in a visit from the mafia.
+		  </p>
+
+		</div>
+
+	</body>
+
 </html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<style>
+			canvas {border:5px solid; margin-left:200px;}
+		</style>
+
+		<!-- bootstrap css -->
+
+		<link href="bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
+		<link href="bootstrap-3.3.6-dist/navbar.css" rel="stylesheet">
+
+
+	</head>
+
+	<body onload="runGame()">
+
+		<!-- navbar -->
+
+		<div class="container">
+			<nav class="navbar navbar-default">
+				<div class="container-fluid">
+
+					<!-- title -->
+
+					<div class="navbar-header">
+						<a class="navbar-brand" href="index.html">Arcade</a>
+					</div>
+
+					<!-- links -->
+
+					<div id="navbar" class="navbar-collapse collapse">
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="breakout.html">Breakout</a></li>
+							<li><a href="blackjack.html">Blackjack</a></li>
+							<li class="active"><a href="blockrunner.html">Block Runner</a></li>
+						</ul>
+					</div>
+
+				</div>
+			</nav>
+		</div>
+
+		<!-- game -->
+
+		<div class="container">
+
+			<script>
+
+			//Alex Pechin
+			//EECS368 Final Project
+
+			var gameBlock; //game block object
+			var obstacles = []; //array of obstacles will update every game instance
+			var points; //object that keeps track of score
+
+			//starts the game and all of its components
+			function runGame() {
+				//creating game block
+			    gameBlock = new attributes(45, 45, "blue", 0, 200); //will have height and width of 45, start at 0 along the board and 200 height of the board
+				//text that will display score to user
+				points = new attributes("20px", "Courier", "black", 20, 20, "text");
+			    gameBoard.start();
+			}
+
+			var gameBoard = {
+				//creating game board
+			    canvas : document.createElement("canvas"),
+			    start : function() {
+					//initializing game with necessary staring components
+			        this.canvas.width = 600;
+			        this.canvas.height = 400;
+			        this.context = this.canvas.getContext("2d"); //built in method for properties for drawing
+			        document.body.insertBefore(this.canvas, document.body.children[1]); //insert canvas into body
+			        this.frameNum = 0;
+			        this.interval = setInterval(updateGameBoard, 20);  //controls how fast obstacles will move
+					//controls movement with arrow keys on keyboard
+					document.addEventListener('keydown', function (e)
+					{
+			            gameBoard.keys = (gameBoard.keys || []); //creates a key array that will remain true if the key is pressed down
+			            gameBoard.keys[e.keyCode] = true;
+			        })
+			        document.addEventListener('keyup', function (e) //will become false when key is released
+					{
+			            gameBoard.keys[e.keyCode] = false;
+			        })
+			        },
+				//clear the canvas
+			    clear : function() {
+			        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			    },
+				//stop the movement
+			    stop : function() {
+			        clearInterval(this.interval);
+			    }
+			}
+
+			//function updates what's happening on the canvas in real time
+			function updateGameBoard() {
+			    var x, height, space, minHeight, maxHeight, minSpace, maxSpace;
+			    for (i = 0; i < obstacles.length; i += 1)
+				{
+			        if (gameBlock.collide(obstacles[i]))
+					{ //if block has collided with an obstacle, game will stop
+			            gameBoard.stop();
+						alert("You scored: " + gameBoard.frameNum + " points!") //tells the user how many points were obtained in that run
+						location.reload(); //restarts the game
+			            return;
+			        }
+			    }
+			    gameBoard.clear(); //this makes sure that the block does not leave a trail as it updates through its movement on the board
+			    gameBoard.frameNum += 1;
+			    if (gameBoard.frameNum == 1 || checkInterval(100)) {
+			        x = gameBoard.canvas.width;
+			        minHeight = 15; //how big the top portion is
+			        maxHeight = 180; //how big the bottom portion is
+			        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight); //randomizes obstacles of different heights
+			        minSpace = 55; //the smallest the space in-between each obstacle can be, must be grater than 45 since our block is 45x45
+			        maxSpace = 180; //the biggest the space will be in-between the obstacles
+			        space = Math.floor(Math.random()*(maxSpace-minSpace+1)+minSpace); //randomizes obstacles of different spaces between
+			        //pushes the obstacles onto the board through the array
+					obstacles.push(new attributes(10, height, "red", x, 0));
+			        obstacles.push(new attributes(10, x - height - space, "red", x, height + space));
+			    }
+			    for (i = 0; i < obstacles.length; i += 1) {
+			        obstacles[i].x += -1; //moves the obstacle through the canvas
+			        obstacles[i].update();
+			    }
+				//update points every instance of updateGameBoard
+				points.text="POINTS: " + gameBoard.frameNum;
+			    points.update();
+				//update game block position every instance
+			    gameBlock.position();
+			    gameBlock.update();
+
+				gameBlock.speedx = 0
+				gameBlock.speedy = 0;
+				//if the left arrow key is pressed with another arrow key
+			    if (gameBoard.keys && gameBoard.keys[37]) {gameBlock.speedx = -1; }
+				//if the right arrow key is pressed with another arrow key
+			    if (gameBoard.keys && gameBoard.keys[39]) {gameBlock.speedx = 1; }
+				//if the up arrow key is pressed with another arrow key
+			    if (gameBoard.keys && gameBoard.keys[38]) {gameBlock.speedy = -1; }
+				//if the down arrow key is pressed with another arrow key
+			    if (gameBoard.keys && gameBoard.keys[40]) {gameBlock.speedy = 1; }
+			    gameBlock.position();
+			    gameBlock.update();
+
+			//www.keycode.info
+			}
+
+			//checks the frames of the canvas and sees if it corresponds with the given interval
+			function checkInterval(a)
+				{
+			    if ((gameBoard.frameNum / a) % 1 == 0) //mod 1 checks that there is no remainder and always zero
+				{
+				return true;
+				}
+			    return false;
+			}
+
+			//attributes of game elements
+			function attributes(width, height, color, x, y, type) {
+			    this.width = width;
+			    this.height = height;
+			    this.speedx = 0;
+			    this.speedy = 0;
+				//position along the x axis of the board
+			    this.x = x;
+				//position along the y axis of the board
+			    this.y = y;
+				this.type = type;
+			    this.update = function() {
+			        ctx = gameBoard.context;
+				//controls displaying the score, with default black text in position x and y
+				if (this.type == "text") {
+			      ctx.font = this.width + " " + this.height; //ctx is a function of canvas that draws the elements onto the canvas
+			      ctx.fillStyle = color;
+			      ctx.fillText(this.text, this.x, this.y);
+			    }
+				else {
+			        ctx.fillStyle = color;
+			        ctx.fillRect(this.x, this.y, this.width, this.height);
+					}
+			    }
+				//position of the block
+			    this.position = function() {
+			        this.x += this.speedx;
+			        this.y += this.speedy;
+			    }
+				//controls collision between the block and  the obstacles
+			    this.collide = function(otherobject) {
+			        var left = this.x;
+			        var right = this.x + (this.width);
+			        var top = this.y;
+			        var bottom = this.y + (this.height);
+			        var otherleft = otherobject.x;
+			        var otherright = otherobject.x + (otherobject.width);
+			        var othertop = otherobject.y;
+			        var otherbottom = otherobject.y + (otherobject.height);
+			        var crash = true;
+					//if the position of the block on the board does not interfere with the position of the obstacle, then it is not colliding
+			        if ((top > otherbottom) || (right < otherleft) || (left > otherright) || (bottom < othertop)) {
+			            crash = false;
+			        }
+			        return crash; //else it is colliding
+			    }
+			}
+			</script>
+
+			<div class="container">
+
+				<h1>Welcome to Block Runner!</h1>
+				<p>Directions: Use the arrow keys on the keyboard to move the block. Multiple arrow keys can be pressed at once. Try to obtain the highest score possible. Good Luck!</p>
+
+			</div>
+
+		</div>
+
+	</body>
+
+</html>
